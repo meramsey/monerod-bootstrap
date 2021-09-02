@@ -206,7 +206,13 @@ function download_latest_binaries(){
 	echo "-------------------------------------"
 	echo "4. Download latest Linux binaries"
 	echo "Downloading..."
-	wget -q --content-disposition https://downloads.getmonero.org/cli/linux64
+	remove_stale_downloads
+	# wget -q --content-disposition https://downloads.getmonero.org/cli/linux64
+	# Here we are saving the filename so we can grep it out of the verified hashes file to do a comparison without having tons of failures for the nonexistent files.
+	# https://stackoverflow.com/a/59492006/1621381
+	file=$(wget --server-response --content-disposition https://downloads.getmonero.org/cli/linux64 2>&1 | grep Saving | cut -d ' ' -f 3 | sed -e 's/[^A-Za-z0-9._-]//g')
+	checksum="$(grep ${file} hashes.txt|awk {'print $1'})"
+	
 }
 
 function verify_downloaded_binaries(){
@@ -214,8 +220,7 @@ function verify_downloaded_binaries(){
 	echo
 	echo "---------------------------------------"
 	echo "5. Verify hashes of downloaded binaries"
-	if shasum -a 256 -c hashes.txt -s 2>&1 | grep -v 'No such file or directory'
-	then
+	if shasum -a 256 "${file}"|grep -Eo '^\w+'|cmp -s <(echo "$checksum"); then
 			echo
 			echo "Success: The downloaded binaries verified properly!"
 	else
@@ -268,9 +273,8 @@ function update_existing_monerod(){
 }
 
 function check_hidden_service_info(){
-	if [[ -f "/var/lib/tor/hidden_service/monero-rpc/hostname" ]]
-	then
-		onion_domain="$(sudo cat /var/lib/tor/hidden_service/monero-rpc/hostname)"
+	if [[ -f "/var/lib/tor/hidden_service/monero-rpc/hostname" ]]; then
+		onion_domain=$(sudo cat /var/lib/tor/hidden_service/monero-rpc/hostname)
 		echo "Hidden Service Active at: ${onion_domain}:18089"
 		echo "Note: To test connectivity, simply visit http://${onion_domain}:18089/get_info and make sure you get a block of text back."
 	fi
