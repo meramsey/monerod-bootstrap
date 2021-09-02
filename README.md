@@ -14,12 +14,13 @@ Usage: monero_remote_node.sh [-p|--profile <arg>] [-h|--help] [<action>]
 
 To install remote node with defaults use:
 ```
-monero_remote_node.sh install
+wget https://raw.githubusercontent.com/meramsey/monerod-bootstrap/main/monero_remote_node.sh
+bash monero_remote_node.sh install
 ```
 
 To upgrade an existing remote node installed from this script:
 ```
-monero_remote_node.sh upgrade
+bash monero_remote_node.sh upgrade
 ```
 
 ### Config profile options are below:
@@ -31,7 +32,7 @@ monero_remote_node.sh upgrade
 
 #### To install with specific profile:
 ```
-monero_remote_node.sh install --profile monerod_public_restricted
+bash monero_remote_node.sh install --profile monerod_public_restricted
 ```
 
 Features:
